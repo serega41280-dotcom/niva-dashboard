@@ -1,0 +1,50 @@
+# Правила проекта (sample_project / NivaDashboard, ESP-IDF)
+
+## Общее
+- Target: ESP32-P4, ESP-IDF v5.5.x (сейчас v5.5.5). Сборка: CMake + idf.py.
+- Отвечай на русском; код, комментарии и имена — на английском.
+- Перед изменением больше чем 2 файлов сначала покажи план и дождись подтверждения.
+
+## Терминал
+- Shell проекта — Windows PowerShell 5.1 (не cmd и не PowerShell 7).
+- Не использовать `&&`, `dir /s /b`, `cd /d`, `findstr`: применяй `Get-ChildItem`, `Select-String`, разделитель команд `;`.
+- Пути в кавычках; при списании директории используй `Get-ChildItem -Path '...' -Recurse` (без `build/`, `.git/`).
+- IDF установлен в `D:\Espressif\frameworks\esp-idf-v5.5.5`; `IDF_TOOLS_PATH=D:\Espressif`. Для сборки/прошивки используй `idf.py` из активированного IDF-окружения.
+
+## Структура проекта (наблюдения)
+- Корень: `CMakeLists.txt` (5 строк boilerplate), `sdkconfig`, `.clangd`, `.gitignore`, `.vscode/`, `.devcontainer/`.
+- Код приложения — только в `main/`: `main/CMakeLists.txt` (`idf_component_register(SRCS "main.c" INCLUDE_DIRS ".")`) и `main/main.c`.
+- `main.c`: `static const char *TAG = "DASHBOARD";`, `app_main` — цикл `while (1)` + `vTaskDelay(pdMS_TO_TICKS(1000))`.
+- Папок `components/`, `Kconfig.projbuild`, `sdkconfig.defaults` пока НЕТ. Новый компонент = новая папка `components/<имя>/` со своим `CMakeLists.txt` + `include/`; подключение в `main` через `REQUIRES <имя>`.
+- `.gitignore` уже игнорирует: `build/`, `sdkconfig`, `sdkconfig.old`, `.vscode/`, `.clangd/`, `.devcontainer/`, `managed_components/`, `compile_commands.json` — эти файлы локальные, их не коммитить.
+
+## Сборка и прошивка
+- Сборка: `idf.py build`. Смену target (`idf.py set-target esp32p4`) не выполнять без нужды.
+- `idf.py fullclean` — только после моего явного согласия.
+- Не вызывать cmake/ninja напрямую; папку build/ не читать, не править, не удалять.
+- `idf.py flash` и `idf.py monitor` — только по моей прямой просьбе.
+
+## Конфигурация
+- sdkconfig руками не править: только `idf.py menuconfig` или `sdkconfig.defaults`.
+- Таблицу разделов и Kconfig-опции менять только после обсуждения со мной.
+- Текущие ключевые значения (из sdkconfig): flash 2MB, `PARTITION_TABLE_SINGLE_APP` (`partitions_singleapp.csv`, offset 0x8000), CPU 400 МГц, `FREERTOS_HZ=100`, log level INFO, оптимизация `CONFIG_COMPILER_OPTIMIZATION_DEBUG` (debug-сборка).
+
+## Код
+- Код приложения — в `main/`; новые модули — в `components/<имя>/` (CMakeLists.txt + include/).
+- Функции возвращают `esp_err_t`; проверять коды возврата всех `esp_*` вызовов.
+- Логирование только `ESP_LOGI/ESP_LOGW/ESP_LOGE` с тегом модуля (`static const char *TAG = "..."`); `printf` не использовать.
+- В `app_main` не блокировать цикл: задержки через `vTaskDelay`, работа в задачах FreeRTOS (задачи создавать `xTaskCreate`, а не спячить `app_main`).
+- Отступы 4 пробела; стиль держать как в существующих файлах (`main.c`).
+
+## Безопасность
+- Ничего не удалять без прямой команды.
+- Не менять назначенные GPIO и пины, не сверившись с текущим использованием.
+- Секреты и пароли — только через Kconfig, без хардкода в исходниках (при необходимости создать `Kconfig.projbuild` + `sdkconfig.defaults`).
+
+## Инструменты и IDE
+- clangd через `esp-clang` (`D:\Espressif\tools\esp-clang\...`), `compile-commands-dir` = `build/`; `.clangd` удаляет флаги `-f*`, `-m*`.
+- OpenOCD-конфиг отладчика: `board/esp32p4-builtin.cfg`.
+- Есть devcontainer ESP-IDF QEMU (`.devcontainer/`, образ `espressif/idf`) для симуляции без железа.
+
+## Проверка
+- После любых правок кода выполнить `idf.py build` и убедиться, что новых ошибок и предупреждений нет.
