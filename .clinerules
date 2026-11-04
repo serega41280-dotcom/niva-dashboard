@@ -24,6 +24,7 @@
 - Не вызывать cmake/ninja напрямую; папку build/ не читать, не править, не удалять.
 - `idf.py flash` и `idf.py monitor` — только по моей прямой просьбе.
 - Если `idf.py` не распознана в терминале: сначала выполни `. 'D:\Espressif\frameworks\esp-idf-v5.5.5\export.ps1'` (dot-sourcing в PowerShell), затем повтори команду.
+- Если `export.ps1` падает из-за алиаса python (Windows Store): prepend `D:\Espressif\python_env\idf5.5_py3.11_env\Scripts` в `$Env:Path` ПЕРЕД активацией, затем повтори.
 
 ## Конфигурация
 - sdkconfig руками не править: только `idf.py menuconfig` или `sdkconfig.defaults`.
@@ -53,3 +54,15 @@
 ## Git
 - Сообщения коммитов — на английском, стиль Conventional Commits (`feat:`, `fix:`, `docs:`).
 - Файлы из списка .gitignore (build/, sdkconfig и т.д.) не коммитить никогда.
+
+## Оборудование и дисплей (Hardware / Display)
+- Плата: Olimex ESP32-P4-PC (ESP32-P4NRW32: 2x400 MHz RISC-V, 768KB SRAM, 32MB PSRAM, 16MB flash).
+- У ESP32-P4 НЕТ Wi-Fi и Bluetooth - не предлагать беспроводные решения.
+- Видеовывод: встроенный мост LT8912B (MIPI-DSI -> HDMI); HDMI только видео, без звука.
+- HDMI и внешний разъём MIPI-DSI делят одни линии DSI - одновременно не работают; используем встроенный HDMI.
+- Пределы HDMI: до 1920x1080@30Hz или 1280x800@60Hz.
+- Экран: матрица BOE NV126B5M-N42, 1920x515 @ 60Hz (eDP), через плату-конвертер LH-W25B-BV6 (HDMI->eDP). Экран проверен: работает от HDMI компьютера.
+- Цель: кастомный HDMI-режим 1920x515@60Hz (пиксель-клок ~70.6 MHz по даташиту матрицы).
+- Графика: LVGL (managed component `lvgl__lvgl`) для интерфейса приборной панели.
+- Звук на плате: кодек ES8311, разъём 3.5mm jack (HDMI звук не передаёт).
+- Эталонный пример: `p4_board_demo` (Olimex) локально в `D:\Projects\ESP32-P4-PC\SOFTWARE\ESP-IDF\p4_board_demo`; его HDMI по умолчанию 1280x720@60Hz - тайминги адаптировать под 1920x515, не копировать слепо.
