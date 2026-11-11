@@ -1,6 +1,6 @@
 # Состояние проекта: Niva Dashboard (цифровая приборная панель)
 
-Обновлено: 2026-11-04, коммит cdf0238.
+Обновлено: 2026-11-04, коммит 5f8576b.
 
 ## Назначение документа
 Единый источник правды о состоянии проекта. Любой ИИ-ассистент (Qwen, Cline+Ollama, ChatGPT)
@@ -38,6 +38,7 @@
 - 2026-11-04: форк заморожен (PUSH_DISABLED); у Cline отключено авто-одобрение Edit;
   границы репозиториев зафиксированы в .clinerules (коммит 4eca3f1).
 - 2026-11-04: components/esp-bsp скопирован из p4_board_demo в niva-dashboard; корневой CMakeLists.txt получил EXTRA_COMPONENT_DIRS; idf.py build зелёный (коммит cdf0238).
+- 2026-11-04: реализован кастомный HDMI-режим 1920x515@60Hz в vendored BSP (4 файла: display.h enum, Kconfig BSP_LCD_HDMI_1920x515_60HZ, esp_lcd_lt8912b.h макросы, esp32_p4_function_ev_board.c массивы+switch+#elif); тайминги из даташита NV126B5M-N42 (pclk 70 MHz целочисл., hfp/hs/hbp=48/32/80, vfp/vs/vbp=5/5/40, htotal 2080, vtotal 565); idf.py build зелёный; коммит 5f8576b.
 
 ## Открытые вопросы
 - Реализованы ли где-то в форке тайминги 1920x515 (найден только enum в p4_production_test)?
@@ -48,7 +49,7 @@
 ## Следующие шаги
 1. По приезде платы: прошить binary/ESP32-P4-PC-board-demo.bin по адресу 0x0, проверить HDMI на нашем экране.
 2. Согласовать sdkconfig под плату (16MB flash, 32MB PSRAM, partitions) и зафиксировать в sdkconfig.defaults.
-3. Реализовать 1920x515@60Hz по рецепту из 4 файлов (образец - recipe_1440x900_hdmi.patch), тайминги из даташита NV126B5M-N42.
+3. Включить режим 1920x515 через menuconfig (BSP_LCD_HDMI_EXPERIMENTAL_MODES + BSP_LCD_HDMI_1920x515_60HZ) и проверить на живом экране.
 4. LVGL: макет интерфейса приборной панели.
 
 ## Правила работы с этим файлом
