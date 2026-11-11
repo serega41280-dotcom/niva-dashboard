@@ -171,6 +171,9 @@ menu "Board Support Package (ESP32-P4)"
             config BSP_LCD_HDMI_1920x1080_30HZ
                 bool "1920x1080@30Hz (experimental)"
                 depends on BSP_LCD_HDMI_EXPERIMENTAL_MODES
+            config BSP_LCD_HDMI_1920x515_60HZ
+                bool "1920x515@60Hz (custom ultrawide panel)"
+                depends on BSP_LCD_HDMI_EXPERIMENTAL_MODES
         endchoice          
         
     endmenu
